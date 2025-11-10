@@ -11,11 +11,6 @@ export function getConvexUrl() {
       return undefined;
     }
   })();
-  // DEBUG: log what the client sees
-  if (typeof window !== "undefined") {
-    console.log("[DEBUG] import.meta.env in client:", (import.meta as any).env);
-    console.log("[DEBUG] fromImportMeta:", fromImportMeta);
-  }
   const url =
     fromImportMeta ?? pick(process.env.VITE_CONVEX_URL) ?? pick(process.env.CONVEX_URL);
   if (!url) {

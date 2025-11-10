@@ -1,13 +1,12 @@
 # [React TanStarter](https://github.com/dotnize/react-tanstarter)
 
-A minimal starter template for 🏝️ TanStack Start. [→ Preview here](https://tanstarter.nize.ph/)
+A minimal starter template for 🏝️ TanStack Start with Convex backend and auth. [→ Preview here](https://tanstarter.nize.ph/)
 
 - [React 19](https://react.dev) + [React Compiler](https://react.dev/learn/react-compiler)
 - TanStack [Start](https://tanstack.com/start/latest) + [Router](https://tanstack.com/router/latest) + [Query](https://tanstack.com/query/latest)
+- [Convex](https://convex.dev/) backend + [Convex Auth](https://labs.convex.dev/auth/)
 - [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
 - [Rolldown Vite](https://vite.dev/guide/rolldown.html) + [Nitro v3](https://v3.nitro.build/) (nightly)
-- [Drizzle ORM](https://orm.drizzle.team/) + PostgreSQL
-- [Better Auth](https://www.better-auth.com/)
 
 ## Getting Started
 
@@ -21,28 +20,59 @@ A minimal starter template for 🏝️ TanStack Start. [→ Preview here](https:
 2. Install dependencies:
 
    ```bash
-   pnpm install
+   bun install
    ```
 
-3. Create a `.env` file based on [`.env.example`](./.env.example).
-
-4. Push the schema to your database with drizzle-kit:
+3. Create a `.env.local` file in the project root with your Convex deployment URL:
 
    ```bash
-   pnpm db push
+   # Local development (run `bun convex:dev` first)
+   VITE_CONVEX_URL=http://127.0.0.1:3210
+   # Optional: also expose to server-side code
+   CONVEX_URL=http://127.0.0.1:3210
    ```
 
-   https://orm.drizzle.team/docs/migrations
+   For production, replace the URL with your Convex cloud deployment URL (e.g. `https://your-app.convex.cloud`).
+
+4. Start the Convex backend in a separate terminal:
+
+   ```bash
+   bun convex:dev
+   ```
+
+   This will run a local Convex deployment at `http://127.0.0.1:3210` and save its deployment name to `.env.local`.
 
 5. Run the development server:
 
    ```bash
-   pnpm dev
+   bun run dev
    ```
 
-   The development server should now be running at [http://localhost:3000](http://localhost:3000).
+   The app should now be running at [http://localhost:3000](http://localhost:3000) with Convex Auth login/signup pages.
 
 ## Deploying to production
+
+1. Deploy your Convex backend:
+
+   ```bash
+   bun convex:deploy
+   ```
+
+   This will output your production Convex deployment URL.
+
+2. Set your production environment variables (e.g. in Vercel/Netlify/Docker):
+
+   ```bash
+   VITE_CONVEX_URL=https://your-app.convex.cloud
+   CONVEX_URL=https://your-app.convex.cloud
+   ```
+
+3. Build and deploy your app:
+
+   ```bash
+   bun run build
+   # Deploy the .output folder to your hosting provider
+   ```
 
 The [vite config](./vite.config.ts#L16-L17) is currently configured to use [Nitro v3](https://v3.nitro.build/docs/nightly) (nightly) to deploy on Vercel, but can be easily switched to other providers.
 
@@ -59,18 +89,21 @@ Refer to the [TanStack Start hosting docs](https://tanstack.com/start/latest/doc
 
 #### Scripts
 
-We use **pnpm** by default, but you can modify these scripts in [package.json](./package.json) to use your preferred package manager.
+We use **bun** by default, but you can modify these scripts in [package.json](./package.json) to use your preferred package manager.
 
-- **`auth:generate`** - Regenerate the [auth db schema](./src/lib/db/schema/auth.schema.ts) if you've made changes to your Better Auth [config](./src/lib/auth/auth.ts).
-- **`db`** - Run [drizzle-kit](https://orm.drizzle.team/docs/kit-overview) commands. (e.g. `pnpm db generate`, `pnpm db studio`)
-- **`ui`** - The shadcn/ui CLI. (e.g. `pnpm ui add button`)
+- **`convex:dev`** - Start the Convex local backend at `http://127.0.0.1:3210`.
+- **`convex:deploy`** - Deploy your Convex functions to a cloud deployment.
+- **`convex:dashboard`** - Open the Convex dashboard for the current deployment.
+- **`ui`** - The shadcn/ui CLI. (e.g. `bun ui add button`)
 - **`format`**, **`lint`**, **`check-types`** - Run Prettier, ESLint, and check TypeScript types respectively.
-  - **`check`** - Run all three above. (e.g. `pnpm check`)
+  - **`check`** - Run all three above. (e.g. `bun check`)
 - **`deps`** - Selectively upgrade dependencies via taze.
 
 #### Utilities
 
-- [`auth/middleware.ts`](./src/lib/auth/middleware.ts) - Sample middleware for forcing authentication on server functions. (see [#5](https://github.com/dotnize/react-tanstarter/issues/5#issuecomment-2615905686) and [#17](https://github.com/dotnize/react-tanstarter/issues/17#issuecomment-2853482062))
+- [`src/lib/convex.ts`](./src/lib/convex.ts) - Isomorphic Convex client setup with environment-aware URL resolution.
+- [`src/router.tsx`](./src/router.tsx) - TanStack Router with ConvexQueryClient integration for SSR-compatible data fetching.
+- [`src/routes/__root.tsx`](./src/routes/__root.tsx) - Root layout with ConvexAuthProvider and theme provider.
 - [`theme-toggle.tsx`](./src/components/theme-toggle.tsx), [`theme-provider.tsx`](./src/components/theme-provider.tsx) - A theme toggle and provider for toggling between light and dark mode. ([#7](https://github.com/dotnize/react-tanstarter/issues/7#issuecomment-3141530412))
 
 ## License
