@@ -1,11 +1,12 @@
+import { convexQuery } from "@convex-dev/react-query";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { authQueryOptions } from "~/lib/auth/queries";
+import { api } from "../../../convex/_generated/api";
 
 export const Route = createFileRoute("/(authenticated)")({
   component: Outlet,
   beforeLoad: async ({ context }) => {
     const user = await context.queryClient.ensureQueryData({
-      ...authQueryOptions(),
+      ...convexQuery(api.users.current, {}),
       revalidateIfStale: true,
     });
     if (!user) {

@@ -1,10 +1,11 @@
+import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Suspense } from "react";
+import { api } from "../../convex/_generated/api";
 import { SignOutButton } from "~/components/sign-out-button";
 import { ThemeToggle } from "~/components/theme-toggle";
 import { Button } from "~/components/ui/button";
-import { authQueryOptions } from "~/lib/auth/queries";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -59,7 +60,7 @@ function HomePage() {
 }
 
 function UserAction() {
-  const { data: user } = useSuspenseQuery(authQueryOptions());
+  const { data: user } = useSuspenseQuery(convexQuery(api.users.current, {}));
 
   return user ? (
     <div className="flex flex-col items-center gap-2">
