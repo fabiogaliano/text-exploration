@@ -10,6 +10,7 @@ export const env = createEnv({
     AUTH_GITHUB_SECRET: z.string().optional(),
     AUTH_GOOGLE_ID: z.string().optional(),
     AUTH_GOOGLE_SECRET: z.string().optional(),
+    GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
   },
   runtimeEnv: process.env,
 });
