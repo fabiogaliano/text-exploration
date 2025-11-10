@@ -1,6 +1,4 @@
 /// <reference types="vite/client" />
-import { ConvexAuthProvider } from "@convex-dev/auth/react";
-import { convexQuery } from "@convex-dev/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   createRootRouteWithContext,
@@ -13,22 +11,15 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
-import { api } from "../../convex/_generated/api";
 import appCss from "~/styles.css?url";
 
 import { ThemeProvider } from "~/components/theme-provider";
 import { Toaster } from "~/components/ui/sonner";
-import { getConvexClient } from "~/lib/convex";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
   user: any;
 }>()({
-  beforeLoad: ({ context }) => {
-    // Prefetch user session with Convex + React Query
-    // Non-blocking prefetch to warm the cache for faster subsequent loads
-    context.queryClient.prefetchQuery(convexQuery(api.users.current, {}));
-  },
   head: () => ({
     meta: [
       {
@@ -67,13 +58,12 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <ConvexAuthProvider client={getConvexClient()}>
-          <ThemeProvider>
-            {children}
-            <Toaster richColors />
-          </ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <Toaster richColors />
+        </ThemeProvider>
 
-          <TanStackDevtools
+        <TanStackDevtools
             plugins={[
               {
                 name: "TanStack Query",
@@ -85,8 +75,6 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
               },
             ]}
           />
-        </ConvexAuthProvider>
-
         <Scripts />
       </body>
     </html>
