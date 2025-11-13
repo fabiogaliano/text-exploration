@@ -9,6 +9,7 @@ interface Experiment {
 
 const experiments: Experiment[] = [
   { id: "ai-tweet-creator", name: "AI Tweet Creator", path: "/ai-tweet-creator" },
+  { id: "reading-tutor", name: "Reading Tutor", path: "/reading-tutor" },
 ];
 
 interface ExperimentsLayoutProps {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
@@ -12,11 +12,17 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { generateTweet } from "~/experiments/ai-tweet-creator/server";
+import {
+  createTweet,
+  editWithLocks,
+  operateOnTarget,
+} from "~/experiments/ai-tweet-creator/server";
+import { LockedHighlighter } from "~/experiments/ai-tweet-creator/components/LockedHighlighter";
+import { PopClip } from "~/experiments/ai-tweet-creator/components/PopClip";
+import { useSelectionBubble } from "~/experiments/ai-tweet-creator/hooks/useSelectionBubble";
 
 const formSchema = z.object({
   idea: z.string().min(1, "Please enter an idea for the tweet"),
@@ -25,6 +31,10 @@ const formSchema = z.object({
 export function AiTweetCreator() {
   const [tweet, setTweet] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [locked, setLocked] = useState<string[]>([]);
+  const tweetRef = useRef<HTMLDivElement | null>(null);
+  const { bubble, setBubble, handleSelection, handleLockedMouseUp, close } =
+    useSelectionBubble(tweetRef);
 
   const form = useForm({
     defaultValues: {
@@ -35,9 +45,13 @@ export function AiTweetCreator() {
     },
     onSubmit: async ({ value }) => {
       setIsGenerating(true);
-      setTweet("");
       try {
-        const result = await generateTweet({ data: value });
+        const result =
+          tweet.trim().length === 0
+            ? await createTweet({ data: { idea: value.idea } })
+            : await editWithLocks({
+                data: { previous: tweet, locked, idea: value.idea },
+              });
         setTweet(result.tweet);
         form.reset();
       } finally {
@@ -45,6 +59,31 @@ export function AiTweetCreator() {
       }
     },
   });
+
+  
+
+  async function doOp(op: "rephrase" | "condense") {
+    if (!bubble) return;
+    setIsGenerating(true);
+    try {
+      const result = await operateOnTarget({
+        data: {
+          previous: tweet,
+          locked: locked.filter((l) => l !== bubble.text),
+          target: bubble.text,
+          operation: op,
+        },
+      });
+      setTweet(result.tweet);
+      close();
+    } finally {
+      setIsGenerating(false);
+    }
+  }
+
+  const removeLock = (t: string) =>
+    setLocked((prev) => prev.filter((l) => l !== t));
+
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
@@ -54,6 +93,48 @@ export function AiTweetCreator() {
           Generate engaging tweets from your ideas using Google Gemini
         </p>
       </div>
+
+      {tweet && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Generated Tweet</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="relative">
+              <LockedHighlighter
+                text={tweet}
+                locked={locked}
+                containerRef={tweetRef}
+                onMouseUp={handleSelection}
+                onLockedMouseUp={handleLockedMouseUp}
+              />
+              {bubble && (
+                <PopClip
+                  visible={true}
+                  x={bubble.x}
+                  y={bubble.y}
+                  isLocked={locked.includes(bubble.text)}
+                  disabled={isGenerating}
+                  onLock={() => {
+                    setLocked((prev) =>
+                      prev.includes(bubble.text) ? prev : [...prev, bubble.text],
+                    );
+                    close();
+                    window.getSelection()?.removeAllRanges();
+                  }}
+                  onUnlock={() => {
+                    removeLock(bubble.text);
+                    close();
+                    window.getSelection()?.removeAllRanges();
+                  }}
+                  onRephrase={() => doOp("rephrase")}
+                  onCondense={() => doOp("condense")}
+                />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <form
         onSubmit={(e) => {
@@ -110,20 +191,6 @@ export function AiTweetCreator() {
           )}
         </div>
       </form>
-
-      {tweet && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Generated Tweet</CardTitle>
-            <CardDescription>
-              Ready to post or copy to your clipboard
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="whitespace-pre-wrap">{tweet}</p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
