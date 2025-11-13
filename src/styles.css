@@ -2,6 +2,11 @@
 
 @import "tw-animate-css";
 
+@plugin "@tailwindcss/typography";
+
+/* Import Streamdown styles for proper markdown rendering */
+@source "../node_modules/streamdown/dist/index.js";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

@@ -26,7 +26,6 @@ export type Reanalysis = z.infer<typeof ReanalysisSchema>;
  */
 export const IdealSummarySchema = z.object({
   idealSummary: z.string().describe("Example of a well-written summary"),
-  explanation: z.string().describe("Why this summary is effective"),
 });
 
 export type IdealSummary = z.infer<typeof IdealSummarySchema>;

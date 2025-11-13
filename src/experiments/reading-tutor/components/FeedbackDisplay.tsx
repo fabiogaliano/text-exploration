@@ -1,3 +1,4 @@
+import { Streamdown } from "streamdown";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import type { Analysis, Reanalysis } from "../schemas";
@@ -40,16 +41,18 @@ export function FeedbackDisplay({
         {progressNote && (
           <div className="bg-muted rounded-lg p-4">
             <h4 className="mb-2 font-semibold">Progress</h4>
-            <p className="text-sm">{progressNote}</p>
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <Streamdown isAnimating={false}>{progressNote}</Streamdown>
+            </div>
           </div>
         )}
 
         {/* Overall Feedback */}
         <div>
           <h4 className="mb-2 font-semibold">Overall Feedback</h4>
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            {feedback}
-          </p>
+          <div className="text-muted-foreground prose prose-sm dark:prose-invert max-w-none">
+            <Streamdown isAnimating={false}>{feedback}</Streamdown>
+          </div>
         </div>
 
         {/* Strengths */}
@@ -59,14 +62,11 @@ export function FeedbackDisplay({
               <CheckCircle2 className="text-green-600 dark:text-green-400 h-5 w-5" />
               Strengths
             </h4>
-            <ul className="space-y-1">
-              {strengths.map((strength, index) => (
-                <li key={index} className="text-sm">
-                  <span className="text-green-600 dark:text-green-400">•</span>{" "}
-                  {strength}
-                </li>
-              ))}
-            </ul>
+            <div className="text-sm">
+              <Streamdown isAnimating={false}>
+                {strengths.map(s => `- ${s}`).join('\n')}
+              </Streamdown>
+            </div>
           </div>
         )}
 
@@ -77,14 +77,11 @@ export function FeedbackDisplay({
               <AlertCircle className="text-orange-600 dark:text-orange-400 h-5 w-5" />
               Areas for Improvement
             </h4>
-            <ul className="space-y-1">
-              {improvements.map((improvement, index) => (
-                <li key={index} className="text-sm">
-                  <span className="text-orange-600 dark:text-orange-400">•</span>{" "}
-                  {improvement}
-                </li>
-              ))}
-            </ul>
+            <div className="text-sm">
+              <Streamdown isAnimating={false}>
+                {improvements.map(i => `- ${i}`).join('\n')}
+              </Streamdown>
+            </div>
           </div>
         )}
       </CardContent>

@@ -138,16 +138,108 @@ interface BuildIdealSummaryPromptParams {
 }
 
 /**
- * Build prompt for generating an ideal summary example
+ * Build prompt for generating a CONCISE ideal summary example (Bullet Points version)
+ * Focuses on core concepts with brief critical examples only
  */
-export function buildIdealSummaryPrompt({
+export function buildIdealSummaryPromptConcise({
   chapterText,
   userAttempts,
 }: BuildIdealSummaryPromptParams): string {
   return [
     TUTOR_ROLE,
     "## Your Task",
-    "Create an exemplary summary of the chapter that demonstrates best practices in comprehension and note-taking.",
+    "Create a CONCISE chapter summary that captures the essential concepts with brief examples only when critical for understanding.",
+    "",
+    "## Format Requirements",
+    "- Use markdown bullet points with proper line breaks",
+    "- Keep each bullet to ONE LINE (no paragraphs)",
+    "- Maximum 3-5 main concepts",
+    "- Include brief examples ONLY when absolutely necessary for understanding difficult concepts",
+    "- Focus on WHAT and WHY, minimize HOW unless critical",
+    "",
+    "## Content Guidelines",
+    "- **Core Theme**: One sentence synthesis of the chapter's main message",
+    "- **Key Concepts**: Only the most important 3-5 ideas",
+    "- **Examples**: Include ONLY when concept is abstract or counterintuitive",
+    "- **Length**: Aim for 10-15 bullet points total (including nested)",
+    "",
+    "## Example Structure",
+    "```markdown",
+    "- Core Theme: [One sentence synthesis]",
+    "",
+    "  - Key Concept 1: [Brief definition]",
+    "    - Why it matters: [One line significance]",
+    "    - Critical example: [Only if absolutely needed]",
+    "",
+    "  - Key Concept 2: [Brief definition]",
+    "    - Key insight: [Most important takeaway]",
+    "```",
+    "",
+    "## Original Chapter",
+    chapterText,
+    "",
+    "## User's Attempts (for context)",
+    ...userAttempts.map((notes, i) => `### Attempt ${i + 1}\n${notes}\n`),
+    "",
+    "## Final Instructions",
+    "1. Be CONCISE - every word should earn its place",
+    "2. Focus on concepts that are central to understanding",
+    "3. Include examples sparingly - only for difficult concepts",
+    "4. Each bullet should be readable in one breath",
+  ].join("\n");
+}
+
+/**
+ * Build prompt for generating an EXTENDED ideal summary example
+ * Full detailed analysis with comprehensive examples and connections
+ */
+export function buildIdealSummaryPromptExtended({
+  chapterText,
+  userAttempts,
+}: BuildIdealSummaryPromptParams): string {
+  return [
+    TUTOR_ROLE,
+    "## Your Task",
+    "Create a COMPREHENSIVE chapter summary using a hierarchical bullet-point structure that demonstrates deep comprehension with detailed examples and connections.",
+    "",
+    "## Format Requirements",
+    "- Use markdown bullet points (- or *) with proper line breaks",
+    "- Each bullet should contain ONE atomic idea",
+    "- **IMPORTANT**: Add a blank line between major sections/concepts",
+    "- Indent nested bullets with 2 spaces per level",
+    "- Parent nodes = main concepts, child nodes = details/examples/applications",
+    "",
+    "## Content Requirements",
+    "- **Coverage**: Include ALL key concepts and main ideas from the chapter",
+    "- **Understanding**: Express everything in YOUR OWN WORDS (demonstrate comprehension, not paraphrasing)",
+    "- **Examples**: Add extensive concrete examples as child nodes under each concept",
+    "  - Multiple examples from the chapter",
+    "  - Your own original examples and analogies",
+    "  - Edge cases and counterexamples where relevant",
+    "- **Connections**: Show relationships between all concepts",
+    "- **Applications**: Include practical applications and implications",
+    "",
+    "## Detailed Structure",
+    "```markdown",
+    "- Chapter Core Theme: [Comprehensive synthesis of the main topic]",
+    "",
+    "  - Key Concept 1: [Detailed definition in your own words]",
+    "    - Why it matters: [Significance/relevance explained]",
+    "    - How it works: [Detailed mechanism or process]",
+    "    - Example from text: [Specific instance with context]",
+    "    - Another example: [Additional instance]",
+    "    - My own example: [Original application or analogy]",
+    "    - Edge case: [When this might not apply]",
+    "    - Connects to: [Explicit relationships to other concepts]",
+    "    - Real-world application: [Practical use cases]",
+    "",
+    "  - Key Concept 2: [Comprehensive definition]",
+    "    - Distinguishing features: [What makes this unique]",
+    "    - Common misconceptions: [What people often get wrong]",
+    "    - Historical context: [If relevant]",
+    "    - Multiple examples: [Various illustrations]",
+    "    - Implications: [What this means for broader understanding]",
+    "```",
     "",
     GRADING_RUBRIC,
     "",
@@ -157,14 +249,25 @@ export function buildIdealSummaryPrompt({
     "## User's Attempts (for context)",
     ...userAttempts.map((notes, i) => `### Attempt ${i + 1}\n${notes}\n`),
     "",
-    "## Instructions",
-    "1. Write a model summary that scores 90+ on the rubric",
-    "2. Include all key concepts with clear explanations",
-    "3. Use original examples or analogies to demonstrate understanding",
-    "4. Maintain clarity and logical organization",
-    "5. Provide an explanation of why this summary is effective",
-    "6. Reference specific techniques used (concept mapping, examples, etc.)",
+    "## Final Instructions",
+    "1. Create an EXHAUSTIVE hierarchical summary with all details",
+    "2. Every concept should have multiple supporting points and examples",
+    "3. Show deep connections between ideas",
+    "4. Include nuances, edge cases, and implications",
+    "5. Demonstrate mastery through comprehensive coverage",
   ].join("\n");
+}
+
+/**
+ * Build prompt for generating an ideal summary example
+ * @deprecated Use buildIdealSummaryPromptConcise or buildIdealSummaryPromptExtended instead
+ */
+export function buildIdealSummaryPrompt({
+  chapterText,
+  userAttempts,
+}: BuildIdealSummaryPromptParams): string {
+  // Default to concise version for backward compatibility
+  return buildIdealSummaryPromptConcise({ chapterText, userAttempts });
 }
 
 interface BuildConversationPromptParams {

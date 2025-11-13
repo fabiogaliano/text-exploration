@@ -22,12 +22,6 @@ export function ExperimentsLayout({ children }: ExperimentsLayoutProps) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="border-b">
-        <div className="container flex h-14 items-center px-4">
-          <h1 className="text-lg font-semibold">Text Exploration</h1>
-        </div>
-      </header>
-
       <div className="flex flex-1">
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
 

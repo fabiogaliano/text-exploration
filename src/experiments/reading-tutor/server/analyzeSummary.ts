@@ -22,5 +22,12 @@ export const analyzeSummary = createServerFn({ method: "POST" })
       schema: AnalysisSchema,
     });
 
+    // Debug logging
+    console.log("=== AnalyzeSummary Debug ===");
+    console.log("Feedback (first 500 chars):", object.feedback.substring(0, 500));
+    console.log("Strengths array:", JSON.stringify(object.strengths, null, 2));
+    console.log("Improvements array:", JSON.stringify(object.improvements, null, 2));
+    console.log("=========================");
+
     return object;
   });
