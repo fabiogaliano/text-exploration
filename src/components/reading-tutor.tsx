@@ -10,6 +10,8 @@ import { ChapterViewer } from "~/experiments/reading-tutor/components/ChapterVie
 import { NotesEditor } from "~/experiments/reading-tutor/components/NotesEditor";
 import { FeedbackDisplay } from "~/experiments/reading-tutor/components/FeedbackDisplay";
 import { useFeedbackHistory } from "~/experiments/reading-tutor/hooks/useFeedbackHistory";
+import type { MultimodalContent } from "~/experiments/reading-tutor/schemas";
+import { toMultimodalContent } from "~/experiments/reading-tutor/schemas";
 import {
   analyzeSummary,
   reanalyze,
@@ -28,7 +30,7 @@ interface ConversationMessage {
 export function ReadingTutor() {
   // Core state
   const [chapterText, setChapterText] = useState("");
-  const [userNotes, setUserNotes] = useState("");
+  const [userNotes, setUserNotes] = useState<MultimodalContent>({ text: "", images: [] });
   const [mode, setMode] = useState<Mode>("input");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [availableTabs, setAvailableTabs] = useState<Set<string>>(new Set());
@@ -60,7 +62,7 @@ export function ReadingTutor() {
 
   // Handle submit for analysis
   const handleSubmit = async () => {
-    if (!chapterText.trim() || !userNotes.trim()) return;
+    if (!chapterText.trim() || !userNotes.text.trim()) return;
 
     setIsAnalyzing(true);
     try {
@@ -112,7 +114,7 @@ export function ReadingTutor() {
       const result = await generateIdealSummary({
         data: {
           chapterText,
-          userAttempts: attempts.map((a) => a.notes),
+          userAttempts: attempts.map((a) => toMultimodalContent(a.notes).text),
           version: "concise",
         },
       });
@@ -138,7 +140,7 @@ export function ReadingTutor() {
       const result = await generateExtendedSummary({
         data: {
           chapterText,
-          userAttempts: attempts.map((a) => a.notes),
+          userAttempts: attempts.map((a) => toMultimodalContent(a.notes).text),
         },
       });
 
@@ -181,7 +183,7 @@ export function ReadingTutor() {
   // Handle starting over
   const handleStartOver = () => {
     setChapterText("");
-    setUserNotes("");
+    setUserNotes({ text: "", images: [] });
     clearHistory();
     setConversationHistory([]);
     setIdealSummary(null);
@@ -309,7 +311,7 @@ export function ReadingTutor() {
 
   const resetMockData = () => {
     setChapterText("");
-    setUserNotes("");
+    setUserNotes({ text: "", images: [] });
     clearHistory();
     setConversationHistory([]);
     setIdealSummary(null);
@@ -317,7 +319,7 @@ export function ReadingTutor() {
     setAvailableTabs(new Set());
   };
 
-  const canSubmit = chapterText.trim().length > 0 && userNotes.trim().length > 0;
+  const canSubmit = chapterText.trim().length > 0 && userNotes.text.trim().length > 0;
 
   // Prepare debug data for DevToolsPanel
   const debugData = {
@@ -329,32 +331,32 @@ export function ReadingTutor() {
         }
       : idealSummary
       ? {
-          idealSummary: idealSummary.activeVersion === 'concise'
+          idealSummary: (idealSummary.activeVersion === 'concise'
             ? idealSummary.concise
-            : idealSummary.extended,
+            : idealSummary.extended) || undefined,
         }
       : {},
     markdown: idealSummary
       ? {
           raw: idealSummary.activeVersion === 'concise'
-            ? idealSummary.concise
-            : idealSummary.extended || '',
+            ? (idealSummary.concise || '')
+            : (idealSummary.extended || ''),
           length: (idealSummary.activeVersion === 'concise'
-            ? idealSummary.concise
-            : idealSummary.extended || '').length,
+            ? (idealSummary.concise || '')
+            : (idealSummary.extended || '')).length,
           hasLineBreaks: (idealSummary.activeVersion === 'concise'
-            ? idealSummary.concise
-            : idealSummary.extended || '').includes('\n'),
+            ? (idealSummary.concise || '')
+            : (idealSummary.extended || '')).includes('\n'),
           hasBullets: (idealSummary.activeVersion === 'concise'
-            ? idealSummary.concise
-            : idealSummary.extended || '').includes('- '),
+            ? (idealSummary.concise || '')
+            : (idealSummary.extended || '')).includes('- '),
         }
       : {},
     state: {
       mode,
       attemptCount: attempts.length,
       hasChapterText: chapterText.length > 0,
-      hasUserNotes: userNotes.length > 0,
+      hasUserNotes: userNotes.text.length > 0 || userNotes.images.length > 0,
       conversationLength: conversationHistory.length,
       idealSummaryVersion: idealSummary?.activeVersion,
       hasExtendedSummary: idealSummary?.extended !== null,

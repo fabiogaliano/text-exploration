@@ -1,6 +1,45 @@
 import { z } from "zod";
 
 /**
+ * Schema for an image attachment
+ */
+export const ImageAttachmentSchema = z.object({
+  id: z.string().describe("Unique identifier for the image"),
+  data: z.string().describe("Base64 data URL of the image"),
+  name: z.string().optional().describe("Optional filename"),
+});
+
+export type ImageAttachment = z.infer<typeof ImageAttachmentSchema>;
+
+/**
+ * Schema for multimodal content (text + optional images)
+ */
+export const MultimodalContentSchema = z.object({
+  text: z.string().describe("Text content"),
+  images: z.array(ImageAttachmentSchema).default([]).describe("Array of attached images"),
+});
+
+export type MultimodalContent = z.infer<typeof MultimodalContentSchema>;
+
+/**
+ * Union type that accepts either plain string or multimodal content
+ * for backward compatibility
+ */
+export const UserNotesSchema = z.union([z.string(), MultimodalContentSchema]);
+
+export type UserNotes = z.infer<typeof UserNotesSchema>;
+
+/**
+ * Helper to convert UserNotes to MultimodalContent
+ */
+export function toMultimodalContent(notes: UserNotes): MultimodalContent {
+  if (typeof notes === "string") {
+    return { text: notes, images: [] };
+  }
+  return notes;
+}
+
+/**
  * Schema for initial analysis of user's summary
  */
 export const AnalysisSchema = z.object({
@@ -43,7 +82,7 @@ export type Conversation = z.infer<typeof ConversationSchema>;
  * Schema for a single feedback attempt
  */
 export const AttemptSchema = z.object({
-  notes: z.string(),
+  notes: UserNotesSchema,
   score: z.number(),
   feedback: z.string(),
   strengths: z.array(z.string()),
