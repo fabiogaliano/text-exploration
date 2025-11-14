@@ -26,18 +26,26 @@ export async function generateStructuredData<T extends z.ZodTypeAny>({
   messages,
   schema,
   model,
+  maxTokens,
 }: {
   prompt?: string;
   messages?: CoreMessage[];
   schema: T;
   model?: ReturnType<typeof google>;
+  maxTokens?: number;
 }) {
   const usedModel = model ?? google("gemini-2.5-flash");
+  const options = {
+    model: usedModel,
+    schema,
+    maxTokens: maxTokens ?? 8192, // Increase default to ensure complete responses
+  };
+
   if (messages) {
-    return generateObject({ model: usedModel, schema, messages });
+    return generateObject({ ...options, messages });
   }
   if (!prompt) {
     throw new Error("Either prompt or messages must be provided");
   }
-  return generateObject({ model: usedModel, schema, prompt });
+  return generateObject({ ...options, prompt });
 }

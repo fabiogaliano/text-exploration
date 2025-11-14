@@ -20,6 +20,7 @@ export const generateExtendedSummary = createServerFn({ method: "POST" })
     const { object } = await generateStructuredData({
       prompt,
       schema: IdealSummarySchema,
+      maxTokens: 8192, // Higher limit for extended summaries
     });
 
     // Debug logging

@@ -23,6 +23,7 @@ export const generateIdealSummary = createServerFn({ method: "POST" })
     const { object } = await generateStructuredData({
       prompt,
       schema: IdealSummarySchema,
+      maxTokens: 4096, // Ensure we have enough tokens for complete summaries
     });
 
     // Debug logging

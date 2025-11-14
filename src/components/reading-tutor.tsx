@@ -16,7 +16,7 @@ import {
   analyzeSummary,
   reanalyze,
   generateIdealSummary,
-  generateExtendedSummary,
+  generateExtendedSummaryV2,
   answerQuestion,
 } from "~/experiments/reading-tutor/server";
 
@@ -137,7 +137,7 @@ export function ReadingTutor() {
 
     setIsGeneratingExtended(true);
     try {
-      const result = await generateExtendedSummary({
+      const result = await generateExtendedSummaryV2({
         data: {
           chapterText,
           userAttempts: attempts.map((a) => toMultimodalContent(a.notes).text),

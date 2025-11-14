@@ -7,6 +7,7 @@ export const ImageAttachmentSchema = z.object({
   id: z.string().describe("Unique identifier for the image"),
   data: z.string().describe("Base64 data URL of the image"),
   name: z.string().optional().describe("Optional filename"),
+  size: z.number().optional().describe("File size in bytes"),
 });
 
 export type ImageAttachment = z.infer<typeof ImageAttachmentSchema>;
